@@ -38,6 +38,15 @@ async function run() {
       res.send(result);
     });
 
+    // single item
+
+    app.get("/single-product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const filter = await productCollections.findOne(query);
+      res.send(filter);
+    });
+
     // post
 
     app.post("/postProduct", async (req, res) => {
