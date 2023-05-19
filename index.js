@@ -60,12 +60,41 @@ async function run() {
       res.send(filter);
     });
 
+    // email query get
+
+    app.get("/user-products", async (req, res) => {
+      console.log(req.query.email);
+      let query = {};
+      if (req.query.email) {
+        query = { sellerEmail: req.query.email };
+      }
+      const result = await productCollections.find(query).toArray();
+      res.send(result);
+    });
+
     // post
 
     app.post("/postProduct", async (req, res) => {
       const body = req.body;
-      const result = await productCollections.insertMany(body);
+      console.log(body);
+      const result = await productCollections.insertOne(body);
       console.log(result);
+      res.send(result);
+    });
+
+    // update
+
+    app.patch("/update-product/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedProductData = req.body;
+      console.log(updatedProductData);
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          ...updatedProductData,
+        },
+      };
+      const result = await productCollections.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
