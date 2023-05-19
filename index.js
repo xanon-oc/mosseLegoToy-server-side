@@ -33,21 +33,22 @@ async function run() {
 
     // all data
 
-    app.get("/all-products", async (req, res) => {
-      const result = await productCollections.find().toArray();
-      res.send(result);
-    });
-
-    // category
-    app.get("/category-products", async (req, res) => {
-      // const subCategory = req.params.subCategory;
-      let query = {};
-      if (req.query.subCategory) {
-        query = { subCategory: req.query.subCategory };
+    app.get("/all-products/:subCategory", async (req, res) => {
+      console.log(req.params.subCategory);
+      if (
+        req.params.subCategory == "star wars" ||
+        req.params.subCategory == "Lego Architecture" ||
+        req.params.subCategory == "Lego City" ||
+        req.params.subCategory == "Lego Cars"
+      ) {
+        const result = await productCollections
+          .find({ subCategory: req.params.subCategory })
+          .toArray();
+        res.send(result);
+      } else {
+        const result = await productCollections.find().toArray();
+        res.send(result);
       }
-      const result = await productCollections.find(query).toArray();
-      res.send({ result });
-      console.log(result);
     });
 
     // single item
