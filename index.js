@@ -38,6 +38,18 @@ async function run() {
       res.send(result);
     });
 
+    // category
+    app.get("/category-products", async (req, res) => {
+      // const subCategory = req.params.subCategory;
+      let query = {};
+      if (req.query.subCategory) {
+        query = { subCategory: req.query.subCategory };
+      }
+      const result = await productCollections.find(query).toArray();
+      res.send({ result });
+      console.log(result);
+    });
+
     // single item
 
     app.get("/single-product/:id", async (req, res) => {
