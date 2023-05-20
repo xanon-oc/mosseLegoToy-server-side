@@ -5,6 +5,13 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 // middleware
+// const corsConfig = {
+//   origin: "",
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+// };
+// app.use(cors(corsConfig));
+// app.options("", cors(corsConfig));
 app.use(cors());
 app.use(express.json());
 
@@ -12,8 +19,8 @@ app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-const uri = "mongodb://0.0.0.0:27017";
-// const uri = `mongodb+srv://${process.env.MOOSE_DATA_UI}:${process.env.MOOSE_DATA_UP}@cluster0.25nqiwd.mongodb.net/?retryWrites=true&w=majority`;
+// const uri = "mongodb://0.0.0.0:27017";
+const uri = `mongodb+srv://${process.env.MOOSE_DATA_UI}:${process.env.MOOSE_DATA_UP}@cluster0.25nqiwd.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -31,6 +38,24 @@ async function run() {
 
     const productCollections = client.db("mooseDb").collection("products");
 
+    // indexing
+    const indexKey = { name: 1, sellerName: 1 };
+    const indexOptions = { multipleFinding: "webfinding" };
+
+    // Search
+    app.get("/search/:text", async (req, res) => {
+      const searchText = req.params.text;
+      const result = await productCollections
+        .find({
+          $or: [
+            { name: { $regex: searchText, $options: "i" } },
+            { sellerName: { $regex: searchText, $options: "i" } },
+          ],
+        })
+        .toArray();
+      res.send(result);
+    });
+
     // all data
 
     app.get("/all-products/:subCategory", async (req, res) => {
@@ -46,7 +71,11 @@ async function run() {
           .toArray();
         res.send(result);
       } else {
-        const result = await productCollections.find().toArray();
+        const result = await productCollections
+          .find()
+          .sort({ price: 1 })
+          .limit(20)
+          .toArray();
         res.send(result);
       }
     });
@@ -68,16 +97,20 @@ async function run() {
       if (req.query.email) {
         query = { sellerEmail: req.query.email };
       }
-      const result = await productCollections.find(query).toArray();
+      const result = await productCollections
+        .find(query)
+        .sort({ price: 1 })
+        .toArray();
       res.send(result);
     });
 
     // post
 
     app.post("/postProduct", async (req, res) => {
-      const body = req.body;
-      console.log(body);
-      const result = await productCollections.insertOne(body);
+      const updatedProduct = req.body;
+      updatedProduct.createdAt = new Date();
+      console.log(updatedProduct);
+      const result = await productCollections.insertOne(updatedProduct);
       console.log(result);
       res.send(result);
     });
