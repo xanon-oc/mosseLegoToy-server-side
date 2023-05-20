@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -17,10 +18,8 @@ app.use(express.json());
 
 // mongodb
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-
-// const uri = "mongodb://0.0.0.0:27017";
-const uri = `mongodb+srv://${process.env.MOOSE_DATA_UI}:${process.env.MOOSE_DATA_UP}@cluster0.25nqiwd.mongodb.net/?retryWrites=true&w=majority`;
+const uri = "mongodb://0.0.0.0:27017";
+// const uri = `mongodb+srv://${process.env.MOOSE_DATA_UI}:${process.env.MOOSE_DATA_UP}@cluster0.25nqiwd.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -35,12 +34,10 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-
     const productCollections = client.db("mooseDb").collection("products");
-
     // indexing
-    const indexKey = { name: 1, sellerName: 1 };
-    const indexOptions = { multipleFinding: "webfinding" };
+    // const indexKey = { name: 1, sellerName: 1 };
+    // const indexOptions = { multipleFinding: "webfinding" };
 
     // Search
     app.get("/search/:text", async (req, res) => {
@@ -93,13 +90,17 @@ async function run() {
 
     app.get("/user-products", async (req, res) => {
       console.log(req.query.email);
+      console.log(req.query.sort);
+
       let query = {};
       if (req.query.email) {
         query = { sellerEmail: req.query.email };
       }
+      let sort = req.query.sort;
+      console.log(sort);
       const result = await productCollections
         .find(query)
-        .sort({ price: 1 })
+        .sort({ price: sort })
         .toArray();
       res.send(result);
     });
