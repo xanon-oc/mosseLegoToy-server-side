@@ -18,8 +18,8 @@ app.use(express.json());
 
 // mongodb
 
-const uri = "mongodb://0.0.0.0:27017";
-// const uri = `mongodb+srv://${process.env.MOOSE_DATA_UI}:${process.env.MOOSE_DATA_UP}@cluster0.25nqiwd.mongodb.net/?retryWrites=true&w=majority`;
+// const uri = "mongodb://0.0.0.0:27017";
+const uri = `mongodb+srv://${process.env.MOOSE_DATA_UI}:${process.env.MOOSE_DATA_UP}@cluster0.25nqiwd.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -33,11 +33,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    client.connect();
     const productCollections = client.db("mooseDb").collection("products");
     // indexing
     // const indexKey = { name: 1, sellerName: 1 };
-    // const indexOptions = { multipleFinding: "webfinding" };
 
     // Search
     app.get("/search/:text", async (req, res) => {
